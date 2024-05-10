@@ -85,12 +85,20 @@ const typeDefs = `
     author: String!
     published: Int!
     genres: [String!]!
+    id: ID!
+  }
+  
+  type Author {
+    name: String!
+    id: ID!
+    bookCount: Int!
   }
 
   type Query {
     bookCount: Int!
     authorCount: Int!
     allBooks: [Book!]
+    allAuthors: [Author!]
   }
 `;
 
@@ -98,13 +106,21 @@ const resolvers = {
   Query: {
     bookCount: () => books.length,
     authorCount: () => authors.length,
-    allBooks: () => books
+    allBooks: () => books,
+    allAuthors: () => authors
+  },
+  Author: {
+    bookCount: (root) =>
+      books.reduce(
+        (acc, curr) => (curr.author === root.name ? acc + 1 : acc),
+        0
+      ),
   },
 };
 
 const server = new ApolloServer({
   typeDefs,
-  resolvers
+  resolvers,
 });
 
 startStandaloneServer(server, {

@@ -24,6 +24,9 @@ const resolvers = {
       return books;
     },
     allAuthors: () => Author.find({}),
+    me: (root, args, context) => {
+      return context.currentUser;
+    },
   },
   Author: {
     bookCount: (root) => Book.collection.countDocuments({ author: root.name }),

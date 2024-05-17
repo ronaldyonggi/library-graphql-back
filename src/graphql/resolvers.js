@@ -32,7 +32,17 @@ const resolvers = {
     bookCount: (root) => Book.collection.countDocuments({ author: root.name }),
   },
   Mutation: {
-    addBook: async (root, args) => {
+    addBook: async (root, args, context) => {
+      const currentUser = context.currentUser;
+
+      if (!currentUser) {
+        throw new GraphQLError('not authenticated', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+          },
+        });
+      }
+
       const authorAlreadyExist = await Author.findOne({ name: args.author });
       if (!authorAlreadyExist) {
         const newAuthor = new Author({

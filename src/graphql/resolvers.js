@@ -76,7 +76,17 @@ const resolvers = {
       }
       return newBook;
     },
-    editAuthor: async (root, args) => {
+    editAuthor: async (root, args, context) => {
+      const currentUser = context.currentUser;
+
+      if (!currentUser) {
+        throw new GraphQLError('not authenticated', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+          },
+        });
+      }
+
       const isAuthorExist = await Author.findOne({ name: args.name });
       if (!isAuthorExist) return null;
 

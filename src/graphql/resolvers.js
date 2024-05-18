@@ -7,8 +7,8 @@ const { JWT_SECRET } = require('../utils/config');
 
 const resolvers = {
   Query: {
-    bookCount: () => Book.collection.countDocuments({}),
-    authorCount: () => Author.collection.countDocuments({}),
+    bookCount: async () => Book.collection.countDocuments({}),
+    authorCount: async () => Author.collection.countDocuments({}),
     allBooks: async (root, args) => {
       let query = {};
 
@@ -23,10 +23,12 @@ const resolvers = {
         query.genres = { $in: [args.genres] };
       }
 
+      // VERY IMPORTANT! The .populate('author') is needed so that GraphQL query can access the book's author! Without it, the result of GQL query for Book.author would be null
       const books = await Book.find(query).populate('author');
       return books;
     },
-    allAuthors: () => Author.find({}),
+    // allBooks: async () => Book.find({}).populate('author'),
+    allAuthors: async () => Author.find({}),
     me: (root, args, context) => {
       return context.currentUser;
     },
@@ -65,7 +67,7 @@ const resolvers = {
         }
       }
 
-      const newBook = new Book({ ...args, author: authorAlreadyExist });
+      const newBook = new Book({ ...args, author: authorAlreadyExist ? authorAlreadyExist : newAuthor });
       try {
         await newBook.save();
       } catch (error) {

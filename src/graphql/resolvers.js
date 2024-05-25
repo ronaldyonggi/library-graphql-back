@@ -95,7 +95,7 @@ const resolvers = {
       const isAuthorExist = await Author.findOne({ name: args.name });
       if (!isAuthorExist) return null;
 
-      const updatedAuthor = { ...args };
+      const updatedAuthor = { ...args, born: args.setBornTo };
 
       const response = await Author.findByIdAndUpdate(
         isAuthorExist.id,

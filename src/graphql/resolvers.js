@@ -20,7 +20,7 @@ const resolvers = {
       }
 
       if (args.genre) {
-        query.genres = { $in: [args.genres] };
+        query.genres = { $in: [args.genre] };
       }
 
       // VERY IMPORTANT! The .populate('author') is needed so that GraphQL query can access the book's author! Without it, the result of GQL query for Book.author would be null

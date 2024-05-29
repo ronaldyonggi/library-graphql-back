@@ -48,14 +48,16 @@ const resolvers = {
         });
       }
 
+      let newAuthor = null;
       const authorAlreadyExist = await Author.findOne({ name: args.author });
       if (!authorAlreadyExist) {
-        const newAuthor = new Author({
+        const newSavedAuthor = new Author({
           name: args.author,
         });
 
         try {
-          await newAuthor.save();
+          await newSavedAuthor.save();
+          newAuthor = newSavedAuthor;
         } catch (error) {
           throw new GraphQLError('Saving author failed', {
             extensions: {
@@ -67,7 +69,10 @@ const resolvers = {
         }
       }
 
-      const newBook = new Book({ ...args, author: authorAlreadyExist ? authorAlreadyExist : newAuthor });
+      const newBook = new Book({
+        ...args,
+        author: authorAlreadyExist ? authorAlreadyExist : newAuthor,
+      });
       try {
         await newBook.save();
       } catch (error) {
@@ -120,7 +125,6 @@ const resolvers = {
         throw new GraphQLError('Create new user failed', {
           extensions: {
             code: 'BAD_USER_INPUT',
-            invalidArgs: args.username,
             error,
           },
         });
@@ -142,7 +146,10 @@ const resolvers = {
         id: user._id,
       };
 
-      return { value: jwt.sign(userForToken, JWT_SECRET) };
+      return { 
+        value: jwt.sign(userForToken, JWT_SECRET), 
+        favoriteGenre: user.favoriteGenre
+      };
     },
   },
 };

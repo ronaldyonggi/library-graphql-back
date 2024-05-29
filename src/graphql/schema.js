@@ -22,6 +22,7 @@ const typeDefs = `#graphql
 
   type Token {
     value: String!
+    favoriteGenre: String!
   }
 
   type Query {

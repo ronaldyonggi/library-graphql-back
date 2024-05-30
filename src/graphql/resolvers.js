@@ -34,7 +34,7 @@ const resolvers = {
     },
   },
   Author: {
-    bookCount: (root) => Book.collection.countDocuments({ author: root.name }),
+    bookCount: (root) => Book.collection.countDocuments({ author: root._id })
   },
   Mutation: {
     addBook: async (root, args, context) => {

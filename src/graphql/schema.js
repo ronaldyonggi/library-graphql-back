@@ -56,6 +56,10 @@ const typeDefs = `#graphql
       password: String!
     ): Token
   }
+
+  type Subscription {
+    bookAdded: Book!
+  }
 `;
 
 module.exports = {

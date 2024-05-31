@@ -4,6 +4,8 @@ const { resolvers } = require('./graphql/resolvers');
 const { PORT } = require('./utils/config');
 const { connectToDatabase } = require('./utils/db');
 const jwt = require('jsonwebtoken');
+const { WebSocketServer } = require('ws');
+const { useServer } = require('graphql-ws/lib/use/ws');
 
 const { makeExecutableSchema } = require('@graphql-tools/schema');
 const { expressMiddleware } = require('@apollo/server/express4');
@@ -25,9 +27,28 @@ const start = async () => {
   const app = express();
   const httpServer = http.createServer(app);
 
+  const wsServer = new WebSocketServer({
+    server: httpServer,
+    path: '/',
+  });
+
+  const schema = makeExecutableSchema({ typeDefs, resolvers });
+  const serverCleanup = useServer({ schema }, wsServer);
+
   const server = new ApolloServer({
-    schema: makeExecutableSchema({ typeDefs, resolvers }),
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    schema,
+    plugins: [
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              await serverCleanup.dispose();
+            },
+          };
+        },
+      },
+    ],
   });
 
   await server.start();

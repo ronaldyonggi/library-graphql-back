@@ -4,6 +4,8 @@ const Book = require('../models/book');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../utils/config');
+const { PubSub } = require('graphql-subscriptions');
+const pubsub = new PubSub();
 
 const resolvers = {
   Query: {
@@ -34,7 +36,7 @@ const resolvers = {
     },
   },
   Author: {
-    bookCount: (root) => Book.collection.countDocuments({ author: root._id })
+    bookCount: (root) => Book.collection.countDocuments({ author: root._id }),
   },
   Mutation: {
     addBook: async (root, args, context) => {
@@ -84,6 +86,9 @@ const resolvers = {
           },
         });
       }
+
+      // Sends notification to subscriber that a new book is added
+      pubsub.publish('BOOK_ADDED', { bookAdded: newBook });
       return newBook;
     },
     editAuthor: async (root, args, context) => {
@@ -146,10 +151,15 @@ const resolvers = {
         id: user._id,
       };
 
-      return { 
-        value: jwt.sign(userForToken, JWT_SECRET), 
-        favoriteGenre: user.favoriteGenre
+      return {
+        value: jwt.sign(userForToken, JWT_SECRET),
+        favoriteGenre: user.favoriteGenre,
       };
+    },
+  },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator('BOOK_ADDED'),
     },
   },
 };

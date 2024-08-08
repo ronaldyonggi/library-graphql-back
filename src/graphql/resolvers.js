@@ -91,6 +91,20 @@ const resolvers = {
       pubsub.publish('BOOK_ADDED', { bookAdded: newBook });
       return newBook;
     },
+    deleteBook: async (root, args, context) => {
+      const currentUser = context.currentUser;
+
+      if (!currentUser) {
+        throw new GraphQLError('not authenticated', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+          },
+        });
+      }
+      const successfulDeleteBook = await Book.findByIdAndDelete(args.id);
+      return successfulDeleteBook ? true : false;
+    },
+
     editAuthor: async (root, args, context) => {
       const currentUser = context.currentUser;
 

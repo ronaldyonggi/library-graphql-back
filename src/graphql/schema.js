@@ -49,6 +49,8 @@ const typeDefs = `#graphql
       setBornTo: Int!
     ): Author
 
+    deleteAuthor(id: ID!): Boolean
+
     createUser(
       username: String!
       favoriteGenre: String!
@@ -62,6 +64,8 @@ const typeDefs = `#graphql
 
   type Subscription {
     bookAdded: Book!
+    authorDeleted: Author!
+    bookDeleted: Book!
   }
 `;
 

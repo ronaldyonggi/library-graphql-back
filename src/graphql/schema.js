@@ -23,6 +23,7 @@ const typeDefs = `#graphql
   type Token {
     value: String!
     favoriteGenre: String!
+    username: String!
   }
 
   type Query {
@@ -41,10 +42,14 @@ const typeDefs = `#graphql
       genres: [String!]!
     ): Book
 
+    deleteBook(id: ID!): Boolean
+
     editAuthor (
       name: String!
       setBornTo: Int!
     ): Author
+
+    deleteAuthor(id: ID!): Boolean
 
     createUser(
       username: String!
@@ -55,6 +60,10 @@ const typeDefs = `#graphql
       username: String!
       password: String!
     ): Token
+  }
+
+  type Subscription {
+    bookAdded: Book!
   }
 `;
 

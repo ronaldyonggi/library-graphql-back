@@ -4,6 +4,8 @@ const Book = require('../models/book');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../utils/config');
+const { PubSub } = require('graphql-subscriptions');
+const pubsub = new PubSub();
 
 const resolvers = {
   Query: {
@@ -34,7 +36,7 @@ const resolvers = {
     },
   },
   Author: {
-    bookCount: (root) => Book.collection.countDocuments({ author: root._id })
+    bookCount: (root) => Book.collection.countDocuments({ author: root._id }),
   },
   Mutation: {
     addBook: async (root, args, context) => {
@@ -84,8 +86,25 @@ const resolvers = {
           },
         });
       }
+
+      // Sends notification to subscriber that a new book is added
+      pubsub.publish('BOOK_ADDED', { bookAdded: newBook });
       return newBook;
     },
+    deleteBook: async (root, args, context) => {
+      const currentUser = context.currentUser;
+
+      if (!currentUser) {
+        throw new GraphQLError('not authenticated', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+          },
+        });
+      }
+      const successfulDeleteBook = await Book.findByIdAndDelete(args.id);
+      return successfulDeleteBook ? true : false;
+    },
+
     editAuthor: async (root, args, context) => {
       const currentUser = context.currentUser;
 
@@ -113,6 +132,11 @@ const resolvers = {
       );
 
       return response;
+    },
+
+    deleteAuthor: async (root, args) => {
+      const author = await Author.findByIdAndDelete(args.id);
+      return author ? true : false;
     },
 
     createUser: async (root, args) => {
@@ -146,10 +170,16 @@ const resolvers = {
         id: user._id,
       };
 
-      return { 
-        value: jwt.sign(userForToken, JWT_SECRET), 
-        favoriteGenre: user.favoriteGenre
+      return {
+        value: jwt.sign(userForToken, JWT_SECRET),
+        username: user.username,
+        favoriteGenre: user.favoriteGenre,
       };
+    },
+  },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator('BOOK_ADDED'),
     },
   },
 };

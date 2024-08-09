@@ -42,6 +42,8 @@ const typeDefs = `#graphql
       genres: [String!]!
     ): Book
 
+    deleteBook(id: ID!): Boolean
+
     editAuthor (
       name: String!
       setBornTo: Int!

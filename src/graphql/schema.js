@@ -64,8 +64,6 @@ const typeDefs = `#graphql
 
   type Subscription {
     bookAdded: Book!
-    authorDeleted: Author!
-    bookDeleted: Book!
   }
 `;
 

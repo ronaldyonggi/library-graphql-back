@@ -134,6 +134,11 @@ const resolvers = {
       return response;
     },
 
+    deleteAuthor: async (root, args) => {
+      const author = await Author.findByIdAndDelete(args.id);
+      return author ? true : false;
+    },
+
     createUser: async (root, args) => {
       const user = new User({
         username: args.username,

@@ -6,6 +6,16 @@ const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../utils/config');
 const { PubSub } = require('graphql-subscriptions');
 const pubsub = new PubSub();
+const DataLoader = require('dataloader');
+
+const bookCountLoader = new DataLoader(async (authorIds) => {
+  const bookCounts = await Promise.all(
+    authorIds.map((authorId) => {
+      return Book.collection.countDocuments({ author: authorId });
+    })
+  );
+  return bookCounts;
+});
 
 const resolvers = {
   Query: {
@@ -36,7 +46,10 @@ const resolvers = {
     },
   },
   Author: {
-    bookCount: (root) => Book.collection.countDocuments({ author: root._id }),
+    // bookCount: (root) => Book.collection.countDocuments({ author: root._id }),
+    bookCount: (root) => {
+      return bookCountLoader.load(root._id);
+    },
   },
   Mutation: {
     addBook: async (root, args, context) => {
